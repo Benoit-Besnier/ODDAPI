@@ -6,19 +6,13 @@
 
 module.exports = function (app) {
 
-    /**
-     * Catch 'http://xxx/unique' GET request
-     */
-    app.get('/unique', function (req, res) {
-        res.status(200).send(req.query);
-    });
+
+    var opendata = require('./opendata');
 
     /**
-     * Catch 'http://xxx/multiple' GET request
+     * Catch 'http://xxx/opendata' GET request
      */
-    app.get('/multiple', function (req, res) {
-        res.status(200).send(req.query);
-    });
+    opendata(app);
 
     /**
      * If user request is not correct, send error 404.

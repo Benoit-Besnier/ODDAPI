@@ -8,7 +8,6 @@
 var express = require('express'),
     app = express(),
     port = process.env.PORT || 3000,
-    mongoose = require('mongoose'),
     bodyParser = require('body-parser');
 
 /**
@@ -18,26 +17,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log('Client IP:', ip);
+    console.log('Client IP [', ip, ']');
     next();
 });
 /**
  * Mongoose (MongoDB solution) initialization and connection
  */
-var mongooseOptions = {
-    server: {
-        reconnectTries: Number.MAX_VALUE
-    },
-    user: "PublicUser",
-    pass: "Publ1c@cce22"
-};
-
-mongoose.connect('mongodb://localhost/openData', mongooseOptions, function (error) {
-    if (error !== undefined)
-        console.log('mongoose.connect failed. ' + error);
-    else
-        console.log('mongoose.connect succeed. Error : ' + error + '.');
-});
+var mongoose = require('./tools/MongooseConfiguration');
+mongoose.connect('mongodb://localhost/opendata', mongoose.ConnectionOptions);
 
 /**
  * Request handlers (middleware)
