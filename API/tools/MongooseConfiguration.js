@@ -2,6 +2,8 @@
  * Created by Benoit on 01/06/2017.
  */
 
+'use strict';
+
 var mongoose = require('mongoose');
 
 /**

@@ -9,6 +9,6 @@ var opendataSchema = require('../schema/OpenData');
 
 var OpenData = mongoose.model('opendata', opendataSchema);
 
-console.log('Fletch OpenData models');
+// console.log('Fletch OpenData models');
 
 module.exports = OpenData;

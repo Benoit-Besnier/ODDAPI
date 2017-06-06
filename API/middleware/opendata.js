@@ -13,7 +13,8 @@ module.exports = function (app) {
 
     app.get('/opendata', function (req, res) {
         var RequestParser = require('../tools/RequestParser');
-        var Dialer = require('../tools/Dialer');
+        var Communicator = require('../tools/Communicator');
+        var RequestManager = require('../tools/RequestManager');
 
         /**
          * Parsing client request
@@ -24,22 +25,33 @@ module.exports = function (app) {
         /**
          * Request configuration from database
          */
-        Dialer.setRequest(RequestParser.getReq());
-        Dialer.run()
+        Communicator.setRequest(RequestParser.getReq());
+        Communicator.run()
+            /**
+             * Request & Response Stacks
+             */
             .then(function () {
-            console.log("S" + JSON.stringify(Dialer.meta, null, 2));
-        })
+                console.log("Communicator.run() ended successfully. Keep processing...");
+                RequestManager.init(Communicator.req, Communicator.meta);
+                RequestManager.run()
+                    /**
+                     * Response parsing & management
+                     */
+                    .then(function () {
+                        console.log('RequestManager.run() ended successfully. Keep processing...');
+                        // console.log(JSON.stringify(RequestManager.res_stack, null, 2));
+
+                    })
+                    .catch(function () {
+                        console.log('Request.manager() ended unsuccessfully. REQ Aborted.');
+                    });
+            })
             .catch(function (values) {
-            console.log("F" + JSON.stringify(values, null, 2));
-        });
+                console.log("Communicator.run() ended unsuccessfully. REQ Aborted.");
+            });
 
-        /**
-         * Request & Response Stacks
-         */
 
-        /**
-         * Response parsing & management
-         */
+
 
 
         res.status(200).send(RequestParser.getReq());
