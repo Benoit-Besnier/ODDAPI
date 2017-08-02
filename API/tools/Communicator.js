@@ -8,25 +8,35 @@ var OpenData = require('../models/OpenData');
 var DataSet = require('../models/DataSet');
 var Config = require('../models/Config');
 
-
+/**
+ * COMMUNICATOR
+ * This object will take a parsed request and make corresponding request to DB.
+ * When running, will get every Opendata / Dataset metadata for MongoDB DB.
+ *
+ * @type {{req: null, meta: Array, errorStack: Array, setRequest: Communicator.setRequest, run: Communicator.run, catchOpenData: Communicator.catchOpenData, catchDataSet: Communicator.catchDataSet}}
+ */
 var Communicator = {
     req: null,
     meta: [],
     errorStack: [],
+    options: null,
 
     /**
-     * Setter of req.
+     * Setter of #req#.
      * Waiting for a "parsed request" object.
      *
      * @param parsedRequest
+     * @param Options
      * @return {number}
      */
-    setRequest: function (parsedRequest) {
+    setRequest: function (parsedRequest, Options) {
         if (parsedRequest == undefined || parsedRequest == null) {
             this.errorStack.push("[ERROR][COMMUNICATOR][SET REQUEST] #parsedRequest# was either null or undefined.");
+            console.log("[ERROR][COMMUNICATOR][SET REQUEST] #parsedRequest# was either null or undefined.");
             return -1;
         }
         this.req = parsedRequest;
+        this.options = Options;
         return 0;
     },
 
@@ -42,6 +52,7 @@ var Communicator = {
         return new Promise(function (resolve, reject) {
             if (req == undefined || req == null) {
                 this.errorStack.push("[ERROR][COMMUNICATOR][RUN] #req# was either null or undefined.");
+                console.log("[ERROR][COMMUNICATOR][RUN] #req# was either null or undefined.");
                 return reject(-1);
             }
             var promises = [];
@@ -75,12 +86,14 @@ var Communicator = {
         return new Promise(function (resolve, reject) {
             if (opendata == undefined || opendata == null) {
                 this.errorStack.push("[ERROR][COMMUNICATOR][CATCH OPENDATA] #obj# was either null or undefined.");
+                console.log("[ERROR][COMMUNICATOR][CATCH OPENDATA] #obj# was either null or undefined.");
                 return reject(-1);
             }
             var odkeys, dskeys;
             odkeys = Object.keys(opendata);
             if (odkeys.length <= 0) {
                 this.errorStack.push("[ERROR][COMMUNICATOR][CATCH OPENDATA] #odkeys.length# should be > 0.");
+                console.log("[ERROR][COMMUNICATOR][CATCH OPENDATA] #odkeys.length# should be > 0.");
                 return reject(-2);
             }
             dskeys = Object.keys(opendata[odkeys[0]]);
@@ -111,7 +124,7 @@ var Communicator = {
                     };
 
                     for (var index = 0; index < dskeys.length ; ++index) {
-                        promises.push(Communicator.catchDataSet(name, dskeys[index]));
+                        promises.push(Communicator.catchDataSet(name, dskeys[index], opendata[odkeys[0]][dskeys[index]]));
                     }
 
                     Promise.all(promises).then(function (values) {
@@ -133,9 +146,10 @@ var Communicator = {
      *
      * @param name
      * @param dataset
+     * @param target_data
      * @return {Promise}
      */
-    catchDataSet: function (name, dataset) {
+    catchDataSet: function (name, dataset, target_data) {
         return new Promise(function (resolve, reject) {
             DataSet.find({ target_opendata: name, id: dataset }).populate({path: 'configs', model: Config}).exec(function (err, res_d) {
                 if (err) {
@@ -149,8 +163,10 @@ var Communicator = {
                         id                              : res_d[0].id,
                         updated_at                      : res_d[0].updated_at,
                         ext_api_url_dataset_componant   : res_d[0].ext_api_url_dataset_componant,
-                        configs                         : res_d[0].configs
+                        configs                         : res_d[0].configs,
+                        target_data                     : target_data
                     };
+                    console.log("[STATUS][COMMUNICATOR][CATCH DATASET] Found dataset of id [" + dataset + "].");
                     return resolve(tmp);
                 } else {
                     Communicator.errorStack.push("[ERROR][COMMUNICATOR][CATCH DATASET] Cannot find dataset of id [" + dataset + "].");

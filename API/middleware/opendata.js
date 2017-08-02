@@ -15,6 +15,7 @@ module.exports = function (app) {
         var RequestParser = require('../tools/RequestParser');
         var Communicator = require('../tools/Communicator');
         var RequestManager = require('../tools/RequestManager');
+        var ResponseBuilder = require('../tools/ResponseBuilder');
 
         /**
          * Parsing client request
@@ -25,34 +26,40 @@ module.exports = function (app) {
         /**
          * Request configuration from database
          */
-        Communicator.setRequest(RequestParser.getReq());
+        Communicator.setRequest(RequestParser.getReq(), RequestParser.options);
         Communicator.run()
             /**
              * Request & Response Stacks
              */
             .then(function () {
                 console.log("Communicator.run() ended successfully. Keep processing...");
-                RequestManager.init(Communicator.req, Communicator.meta);
+                // console.log(JSON.stringify(Communicator.meta, null, 2));
+                RequestManager.init(Communicator.req, Communicator.meta, Communicator.options);
                 RequestManager.run()
                     /**
                      * Response parsing & management
                      */
                     .then(function () {
-                        console.log('RequestManager.run() ended successfully. Keep processing...');
+                        console.log("RequestManager.run() ended successfully. Keep processing...");
+                        // console.log(JSON.stringify(RequestManager.req_stack, null, 2));
                         // console.log(JSON.stringify(RequestManager.res_stack, null, 2));
-
+                        ResponseBuilder.init(RequestManager.meta, RequestManager.res_stack, RequestManager.options);
+                        ResponseBuilder.run()
+                            .then(function () {
+                                console.log(JSON.stringify(ResponseBuilder.valid, null, 2));
+                                console.log("ResponseBuilder.run() ended successfully. Keep processing...");
+                            })
+                            .catch(function () {
+                                console.log("ResponseBuilder.run() ended unsuccessfully. REQ Aborted.");
+                            });
                     })
-                    .catch(function () {
-                        console.log('Request.manager() ended unsuccessfully. REQ Aborted.');
+                    .catch(function (values) {
+                        console.log("RequestManager.run() ended unsuccessfully. REQ Aborted.");
                     });
             })
             .catch(function (values) {
                 console.log("Communicator.run() ended unsuccessfully. REQ Aborted.");
             });
-
-
-
-
 
         res.status(200).send(RequestParser.getReq());
     });

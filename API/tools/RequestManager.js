@@ -6,13 +6,23 @@
 
 var Request = require('request');
 
+
+/**
+ * REQUEST MANAGER
+ * This object will take a parsed object and meta received from DB.
+ * When running, will build an uri stack which correspond to each user request, make a request to this uri and stack each response.
+ *
+ * Asynchronous instance - use Global Promise -
+ *
+ * @type {{req: null, meta: null, errorStack: Array, req_stack: Array, res_stack: Array, init: RequestManager.init, run: RequestManager.run, reqBuilder: RequestManager.reqBuilder, requester: RequestManager.requester, request: RequestManager.request}}
+ */
 var RequestManager = {
     req: null,
     meta: null,
     errorStack: [],
     req_stack: [],
     res_stack: [],
-
+    options: null,
 
     /**
      * Setter of #req# and #db_data#.
@@ -20,9 +30,10 @@ var RequestManager = {
      *
      * @param ParsedReq
      * @param Meta
+     * @param Options
      * @return {number}
      */
-    init: function (ParsedReq, Meta) {
+    init: function (ParsedReq, Meta, Options) {
         if (ParsedReq == undefined || ParsedReq == null) {
             this.errorStack.push("[ERROR][REQUEST MANAGER][INIT] #ParsedReq# was either null or undefined.");
             console.log("[ERROR][REQUEST MANAGER][INIT] #ParsedReq# was either null, undefined.");
@@ -35,6 +46,7 @@ var RequestManager = {
         }
         this.req = ParsedReq;
         this.meta = Meta;
+        this.options = Options;
         return 0;
     },
 
@@ -48,13 +60,13 @@ var RequestManager = {
     run: function () {
         return new Promise(function (resolve, reject) {
             if (RequestManager.req == undefined || RequestManager.req == null) {
-                RequestManager.errorStack.push("[ERROR][REQUEST MANAGER][RUN] #this.req# was either null or undefined.");
-                console.log("[ERROR][REQUEST MANAGER][RUN] #this.req# was either null, undefined.");
+                RequestManager.errorStack.push("[ERROR][REQUEST MANAGER][RUN] #RequestManager.req# was either null or undefined.");
+                console.log("[ERROR][REQUEST MANAGER][RUN] #RequestManager.req# was either null, undefined.");
                 return -1;
             }
             if (RequestManager.meta == undefined || RequestManager.meta == null || RequestManager.meta.length <= 0) {
-                RequestManager.errorStack.push("[ERROR][REQUEST MANAGER][RUN] #this.meta# was either null, undefined or of length <= 0.");
-                console.log("[ERROR][REQUEST MANAGER][RUN] #this.meta# was either null, undefined or of length <= 0.");
+                RequestManager.errorStack.push("[ERROR][REQUEST MANAGER][RUN] #RequestManager.meta# was either null, undefined or of length <= 0.");
+                console.log("[ERROR][REQUEST MANAGER][RUN] #RequestManager.meta# was either null, undefined or of length <= 0.");
                 return -1;
             }
             RequestManager.reqBuilder();

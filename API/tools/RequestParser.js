@@ -31,6 +31,7 @@ var RequestParser = {
     setRawReq: function (userReq) {
         if (userReq == undefined || userReq == null) {
             this.errorStack.push("[ERROR][REQUEST PARSER][SET RAW REQUEST] #userReq# was either null or undefined.");
+            console.log("[ERROR][REQUEST PARSER][SET RAW REQUEST] #userReq# was either null or undefined.");
             return -1;
         }
         this.rawReq = userReq;
@@ -46,6 +47,7 @@ var RequestParser = {
     parseRawReq: function () {
         if (this.rawReq == undefined || this.rawReq == null) {
             this.errorStack.push("[ERROR][REQUEST PARSER][PARSE RAW REQUEST] #rawReq# was either null or undefined.");
+            console.log("[ERROR][REQUEST PARSER][PARSE RAW REQUEST] #rawReq# was either null or undefined.");
             return -1;
         }
 
@@ -77,6 +79,7 @@ var RequestParser = {
     checkOptions: function (options) {
         if (options == undefined || options == null) {
             this.errorStack.push("[ERROR][REQUEST PARSER][CHECK OPTIONS] #options# was either null or undefined.");
+            console.log("[ERROR][REQUEST PARSER][CHECK OPTIONS] #options# was either null or undefined.");
             return -1;
         }
 
@@ -86,10 +89,10 @@ var RequestParser = {
                 case "aggregate":
                     this.options.aggregate = true;
                     break;
-                case "rawRes":
+                case "raw_result":
                     this.options.rawRes = true;
                     break;
-                case "customReq":
+                case "custom_request":
                     this.options.customReq = true;
                     break;
                 default:
@@ -109,6 +112,7 @@ var RequestParser = {
     getReq: function () {
         if (this.Req == undefined || this.Req == null) {
             this.errorStack.push("[ERROR][REQUEST PARSER][GET REQ] #Req# was either null or undefined.");
+            console.log("[ERROR][REQUEST PARSER][GET REQ] #Req# was either null or undefined.");
             return null;
         }
         return this.Req;
